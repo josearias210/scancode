@@ -4,7 +4,7 @@ set -euo pipefail
 apk="${1:?Provide the debug APK path}"
 bundle="${2:?Provide the Android App Bundle path}"
 
-"$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 "$apk"
+"$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 "$apk"
 
 tmp_dir=$(mktemp -d)
 trap 'rm -r "$tmp_dir"' EXIT
