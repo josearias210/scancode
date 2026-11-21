@@ -49,6 +49,7 @@ jobs:
             app/build/outputs/bundle/release/app-release.aab
 
       - name: Keep build artifacts
+        if: github.ref_name == github.event.repository.default_branch && github.ref_type == 'branch'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scancode-android
@@ -59,7 +60,7 @@ jobs:
           retention-days: 7
 
       - name: Keep test and lint reports
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.ref_name == github.event.repository.default_branch && github.ref_type == 'branch' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scancode-reports
