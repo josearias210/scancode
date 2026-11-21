@@ -34,8 +34,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
 
-      - name: Install Android SDK packages
-        run: sdkmanager --install 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          packages: 'platforms;android-36 build-tools;35.0.0'
 
       - name: Lint, test and build
         run: bash ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
@@ -47,6 +49,7 @@ jobs:
             app/build/outputs/bundle/release/app-release.aab
 
       - name: Keep build artifacts
+        if: github.ref_name == github.event.repository.default_branch && github.ref_type == 'branch'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scancode-android
@@ -57,7 +60,7 @@ jobs:
           retention-days: 7
 
       - name: Keep test and lint reports
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.ref_name == github.event.repository.default_branch && github.ref_type == 'branch' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scancode-reports

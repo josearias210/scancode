@@ -47,7 +47,7 @@
     <string name="delete">Delete</string>
     <string name="clear_all">Clear all</string>
     <string name="clear_history_title">Clear scan history?</string>
-    <string name="clear_history_message">All saved codes will be removed from this device.</string>
+    <string name="clear_history_message">The history will be cleared. Codes in collections will be kept.</string>
     <string name="history_title">Scan history</string>
     <string name="history_subtitle">Codes you’ve saved on this device.</string>
     <string name="history_search">Search saved codes</string>
@@ -62,7 +62,7 @@
     <string name="privacy">Privacy</string>
     <string name="privacy_title">ScanCode Privacy Policy</string>
     <string name="privacy_contact">Contact developer</string>
-    <string name="privacy_body">ScanCode decodes camera frames and photos on your device without saving the images. Camera permission is optional.\n\nHistory keeps up to 200 codes you explicitly save, with their contents, formats and scan times. They stay in private app storage until you delete them or they fall outside the limit. You can clear history in the app or remove all app data in Android settings. History is excluded from Android backup and device transfer.\n\nOpening, looking up, copying or sharing a code passes its data to the feature or app you selected. Google ML Kit may send device and app metadata, a per-installation identifier, and diagnostic and usage information to Google over an encrypted connection.</string>
+    <string name="privacy_body">ScanCode decodes camera frames and photos on your device without saving the images. Camera permission is optional.\n\nHistory keeps up to 200 saved codes. Collections keep their codes independently of the history limit. Both stay in private app storage and are excluded from Android backup and device transfer. Link reviews run on the device.\n\nOpening, looking up, copying or sharing a code passes its data to the feature or app you selected. Google ML Kit may send device and app metadata, a per-installation identifier, and diagnostic and usage information to Google over an encrypted connection.</string>
     <string name="kind_text">Text</string>
     <string name="kind_link">Link</string>
     <string name="kind_phone">Phone</string>
@@ -77,4 +77,29 @@
     <string name="wifi_network">Wi-Fi · %1$s</string>
     <string name="unknown_format">Code</string>
     <string name="photo_picker_unavailable">No photo picker is available on this device.</string>
+    <string name="collections">Collections</string>
+    <string name="collection_add">Add to collections</string>
+    <string name="collection_count">Collections (%1$d)</string>
+    <string name="collection_choose">Save to collections</string>
+    <string name="collection_all_history">All scan history</string>
+    <string name="collection_new">New collection</string>
+    <string name="collection_create">Create</string>
+    <string name="collection_rename">Rename collection</string>
+    <string name="collection_delete">Delete collection</string>
+    <string name="collection_delete_title">Delete this collection?</string>
+    <string name="collection_delete_message">Scans in history or in other collections will be kept.</string>
+    <string name="collection_manage">Manage collection</string>
+    <string name="collection_name">Collection name</string>
+    <string name="collection_name_required">Enter a name.</string>
+    <string name="collection_name_unavailable">This name is already in use.</string>
+    <string name="collection_subtitle">Codes saved to this collection.</string>
+    <string name="collection_empty_title">This collection is empty</string>
+    <string name="collection_empty_detail">Open a scan and choose Add to collections.</string>
+    <string name="link_review_title">Link review</string>
+    <string name="link_https">HTTPS · Encrypted connection requested</string>
+    <string name="link_http">HTTP · Unencrypted link</string>
+    <string name="link_shortener">Recognized link shortener. The final destination may differ.</string>
+    <string name="link_ip_address">This link uses an IP address.</string>
+    <string name="link_internationalized_host">Internationalized domain shown in its ASCII form.</string>
+    <string name="link_reputation_unchecked">Checked on device. Website reputation is unchecked.</string>
 </resources>
