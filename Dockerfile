@@ -1,5 +1,5 @@
-# Android build environment with Gradle 8.13 and JDK 17.
-FROM gradle:8.13-jdk17
+# Android build environment with Gradle 9.9.1 and JDK 17.
+FROM gradle:9.9.1-jdk17
 
 ENV ANDROID_HOME=/opt/android-sdk \
     ANDROID_SDK_ROOT=/opt/android-sdk
@@ -15,6 +15,6 @@ RUN mkdir -p $ANDROID_HOME/cmdline-tools \
     && rm /tmp/tools.zip
 
 RUN yes | sdkmanager --licenses > /dev/null \
-    && sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+    && sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
 WORKDIR /project
