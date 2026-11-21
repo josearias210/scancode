@@ -1,0 +1,67 @@
+name: Android build
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, test and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+
+      - name: Install Android SDK packages
+        run: sdkmanager --install 'platforms;android-36' 'build-tools;35.0.0'
+
+      - name: Lint, test and build
+        run: bash ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
+
+      - name: Check 16 KiB native alignment
+        run: |
+          bash scripts/check-native-alignment.sh \
+            app/build/outputs/apk/debug/app-debug.apk \
+            app/build/outputs/bundle/release/app-release.aab
+
+      - name: Keep build artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: scancode-android
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Keep test and lint reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: scancode-reports
+          path: |
+            app/build/reports/lint-results-debug.*
+            app/build/reports/tests/testDebugUnitTest/
+          retention-days: 7

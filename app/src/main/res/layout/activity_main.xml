@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/brand_tile"
+                android:importantForAccessibility="no"
+                android:padding="9dp"
+                app:srcCompat="@drawable/ic_scan" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="11dp"
+                android:layout_weight="1"
+                android:text="@string/app_name"
+                android:textColor="@color/ink"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/historyButton"
+                style="@style/Widget.ScanCode.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="96dp"
+                android:text="@string/history"
+                app:icon="@drawable/ic_history" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/scanTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/scan_title"
+            android:textAppearance="@style/TextAppearance.ScanCode.Title" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/scan_subtitle"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="@color/muted" />
+
+        <FrameLayout
+            android:id="@+id/cameraCard"
+            android:layout_width="match_parent"
+            android:layout_height="390dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/camera_card">
+
+            <androidx.camera.view.PreviewView
+                android:id="@+id/previewView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no"
+                app:implementationMode="compatible"
+                app:scaleType="fillCenter" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/camera_shade"
+                android:importantForAccessibility="no" />
+
+            <com.scancode.app.ScanOverlay
+                android:id="@+id/scanOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/cameraStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="15dp"
+                android:accessibilityLiveRegion="polite"
+                android:background="@drawable/status_pill"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="@string/camera_off"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="@color/camera_text" />
+
+            <LinearLayout
+                android:id="@+id/cameraFooter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="12dp">
+
+                <TextView
+                    android:id="@+id/cameraHint"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/align_code"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="@color/camera_text" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/permissionButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:minHeight="48dp"
+                    android:text="@string/enable_camera"
+                    android:textColor="@color/camera_surface"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/lime" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/galleryButton"
+                style="@style/Widget.ScanCode.Action"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:text="@string/gallery"
+                app:icon="@drawable/ic_photo" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/torchButton"
+                style="@style/Widget.ScanCode.Action"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="4dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:text="@string/torch"
+                app:icon="@drawable/ic_flash" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/frameButton"
+                style="@style/Widget.ScanCode.Action"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:text="@string/frame"
+                app:icon="@drawable/ic_frame" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/surface_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp">
+
+            <TextView
+                android:id="@+id/zoomLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@+id/zoomSlider"
+                android:text="@string/zoom"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/ink" />
+
+            <com.google.android.material.slider.Slider
+                android:id="@id/zoomSlider"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:layout_weight="1"
+                android:enabled="false"
+                android:valueFrom="0"
+                android:valueTo="1"
+                app:labelBehavior="gone" />
+
+            <TextView
+                android:id="@+id/zoomValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:importantForAccessibility="no"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="@color/on_tonal" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/privacyButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:minHeight="48dp"
+            android:text="@string/privacy" />
+    </LinearLayout>
+</ScrollView>

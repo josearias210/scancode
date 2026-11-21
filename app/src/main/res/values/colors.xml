@@ -1,0 +1,15 @@
+<resources>
+    <color name="surface">#F4F6FC</color>
+    <color name="card">#FFFFFF</color>
+    <color name="ink">#16213B</color>
+    <color name="muted">#52617C</color>
+    <color name="outline">#DCE3F0</color>
+    <color name="primary">#354BBB</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="tonal">#E8EDFF</color>
+    <color name="on_tonal">#25378D</color>
+    <color name="camera_surface">#131D34</color>
+    <color name="camera_text">#F5F7FF</color>
+    <color name="lime">#DCF184</color>
+    <color name="brand">#2D40A1</color>
+</resources>

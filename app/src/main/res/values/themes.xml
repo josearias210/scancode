@@ -1,0 +1,34 @@
+<resources>
+    <style name="Theme.ScanCode" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/tonal</item>
+        <item name="colorOnPrimaryContainer">@color/on_tonal</item>
+        <item name="colorSecondaryContainer">@color/tonal</item>
+        <item name="colorOnSecondaryContainer">@color/on_tonal</item>
+        <item name="colorSurface">@color/card</item>
+        <item name="colorOnSurface">@color/ink</item>
+        <item name="colorSurfaceVariant">@color/tonal</item>
+        <item name="colorOnSurfaceVariant">@color/muted</item>
+        <item name="colorOutline">@color/outline</item>
+        <item name="android:windowBackground">@color/surface</item>
+    </style>
+
+    <style name="Widget.ScanCode.Action" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:minHeight">56dp</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="iconGravity">textStart</item>
+        <item name="iconPadding">6dp</item>
+        <item name="iconSize">18dp</item>
+    </style>
+
+    <style name="TextAppearance.ScanCode.Title" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.035</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+</resources>
