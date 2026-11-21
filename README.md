@@ -8,8 +8,8 @@
 
 <p align="center">
   <img src="docs/screenshots/scanner.png" width="245" alt="ScanCode viewfinder with camera and photo options" />
-  <img src="docs/screenshots/result.png" width="245" alt="ScanCode result sheet displaying a decoded QR link" />
-  <img src="docs/screenshots/history.png" width="245" alt="ScanCode searchable history with saved codes" />
+  <img src="docs/screenshots/result.png" width="245" alt="ScanCode link review showing the destination and HTTPS status" />
+  <img src="docs/screenshots/history.png" width="245" alt="ScanCode searchable history with collection controls" />
 </p>
 
 ## Features
@@ -17,7 +17,8 @@
 - Scan live with tap-to-focus, pinch-to-zoom, a zoom slider, torch control on compatible devices, and three viewfinder shapes.
 - Pick a photo with Android's system picker. When a photo contains multiple readable codes, choose which one to open.
 - Review the raw content and format before copying, sharing, or opening a supported action. Web links, phone numbers, messages, maps, and Wi-Fi codes get relevant actions.
-- Save up to 200 scans locally. Search saved codes, delete one, or clear the history.
+- Inspect the destination and HTTP or HTTPS in an on-device link review. The result flags recognized shorteners, literal IPs, and internationalized domain names.
+- Save up to 200 scans in recent history, and organize codes into named collections that persist independently of history.
 - Scan offline with a bundled ML Kit model. The interface follows the device's light or dark theme and supports English and Spanish.
 
 The scanner supports QR, Aztec, Data Matrix, PDF417, EAN-8, EAN-13, UPC-A, UPC-E, Code 39, Code 93, Code 128, Codabar, and ITF. [ML Kit format details](https://developers.google.com/ml-kit/vision/barcode-scanning/)
@@ -53,10 +54,13 @@ Install the debug build on a connected Android 8.0 or later device or emulator w
 
 ScanCode is an Android app written in Kotlin with Material 3 and Android Views. CameraX and ML Kit map detections into preview coordinates so the viewfinder can choose the nearest centered code. Android's photo picker grants access to the selected image. A bounded decoder handles image rotation and large photos off the UI thread.
 
-History uses app-private storage and remains compatible with saves from version 1.0. Version 1.1 targets Android 16 while keeping Android 8.0 as its minimum.
+History and collections use app-private storage. History remains compatible with saves from version 1.0. Version 1.1 targets Android 16 while keeping Android 8.0 as its minimum.
+
+ScanCode is a noncommercial project with no advertising.
 
 ## Project resources
 
+- [Using ScanCode](docs/usage.md)
 - [Release preparation and device QA](docs/release.md)
 - [Play Store listing copy and assets](docs/store/README.md)
 - [Privacy policy](PRIVACY.md)

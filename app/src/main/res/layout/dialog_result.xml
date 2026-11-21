@@ -45,6 +45,59 @@
             android:textAppearance="?attr/textAppearanceLabelMedium"
             android:textColor="@color/on_tonal" />
 
+        <LinearLayout
+            android:id="@+id/linkReview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/surface_card"
+            android:orientation="vertical"
+            android:padding="15dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/link_review_title"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@color/on_tonal" />
+
+            <TextView
+                android:id="@+id/linkHost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="monospace"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="@color/ink"
+                android:textDirection="ltr"
+                android:textIsSelectable="true" />
+
+            <TextView
+                android:id="@+id/linkTransport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/ink" />
+
+            <TextView
+                android:id="@+id/linkSignals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/ink" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/link_reputation_unchecked"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="@color/muted" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/valueText"
             android:layout_width="match_parent"
@@ -105,5 +158,14 @@
                 android:layout_weight="1"
                 android:text="@string/share" />
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/resultCollectionsButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:minHeight="48dp"
+            android:text="@string/collection_add" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
