@@ -21,10 +21,12 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
+internal enum class ResultOrigin { SCAN, HISTORY, COLLECTION }
+
 internal fun AppCompatActivity.showResult(
     result: ScanResult,
     history: History,
-    fromHistory: Boolean = false,
+    origin: ResultOrigin = ResultOrigin.SCAN,
     onHistoryChanged: () -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
@@ -42,6 +44,9 @@ internal fun AppCompatActivity.showResult(
     view.findViewById<TextView>(R.id.valueText).text = result.value
     view.findViewById<View>(R.id.closeButton).setOnClickListener { dialog.dismiss() }
 
+    val review = if (content.kind == CodeKind.LINK) content.target?.let(LinkReview::inspect) else null
+    showLinkReview(view, review)
+
     val action = actionFor(result, content)
     view.findViewById<MaterialButton>(R.id.openButton).apply {
         isVisible = action != null
@@ -57,8 +62,24 @@ internal fun AppCompatActivity.showResult(
         }
     }
 
-    view.findViewById<MaterialButton>(R.id.saveButton).apply {
-        if (fromHistory) {
+    val saveButton = view.findViewById<MaterialButton>(R.id.saveButton)
+    val collectionsButton = view.findViewById<MaterialButton>(R.id.resultCollectionsButton)
+
+    fun refreshSavedActions() {
+        val library = history.snapshot()
+        if (origin == ResultOrigin.SCAN) {
+            val saved = library.recent.any { it.value == result.value }
+            saveButton.setText(if (saved) R.string.saved else R.string.save)
+            saveButton.isEnabled = !saved
+        }
+        val count = library.collectionIdsFor(result.value).size
+        collectionsButton.text = if (count == 0) getString(R.string.collection_add)
+        else getString(R.string.collection_count, count)
+    }
+
+    saveButton.apply {
+        isVisible = origin != ResultOrigin.COLLECTION
+        if (origin == ResultOrigin.HISTORY) {
             setText(R.string.delete)
             setOnClickListener {
                 MaterialAlertDialogBuilder(this@showResult)
@@ -71,19 +92,21 @@ internal fun AppCompatActivity.showResult(
                     }
                     .show()
             }
-        } else {
-            val markSaved = {
-                setText(R.string.saved)
-                isEnabled = false
-            }
-            if (history.all().any { it.value == result.value }) markSaved()
+        } else if (origin == ResultOrigin.SCAN) {
             setOnClickListener {
                 history.add(result)
-                markSaved()
+                refreshSavedActions()
                 message(R.string.saved)
             }
         }
     }
+    collectionsButton.setOnClickListener {
+        chooseResultCollections(history, result, saveToHistory = origin == ResultOrigin.SCAN) {
+            refreshSavedActions()
+            onHistoryChanged()
+        }
+    }
+    refreshSavedActions()
 
     view.findViewById<View>(R.id.copyButton).setOnClickListener { copyCode(result.value) }
     view.findViewById<View>(R.id.shareButton).setOnClickListener {
@@ -92,6 +115,26 @@ internal fun AppCompatActivity.showResult(
         openExternal(Intent.createChooser(send, getString(R.string.share)))
     }
     dialog.show()
+}
+
+private fun AppCompatActivity.showLinkReview(view: View, review: LinkReview?) {
+    view.findViewById<View>(R.id.linkReview).isVisible = review != null
+    if (review == null) return
+    view.findViewById<TextView>(R.id.linkHost).text = review.authority
+    view.findViewById<TextView>(R.id.linkTransport).setText(
+        if (review.usesHttps) R.string.link_https else R.string.link_http,
+    )
+    view.findViewById<TextView>(R.id.linkSignals).apply {
+        val hints = review.signals.map {
+            when (it) {
+                LinkSignal.SHORTENER -> R.string.link_shortener
+                LinkSignal.IP_ADDRESS -> R.string.link_ip_address
+                LinkSignal.INTERNATIONALIZED_HOST -> R.string.link_internationalized_host
+            }
+        }
+        isVisible = hints.isNotEmpty()
+        text = hints.joinToString("\n") { getString(it) }
+    }
 }
 
 internal fun ScanResult.displayFormat(context: Context): String =

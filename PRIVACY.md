@@ -10,9 +10,13 @@ When you grant camera permission, ScanCode reads camera frames while the scanner
 
 ## Saved codes
 
-When you tap **Save**, the decoded text, code format and scan time are kept in app-private storage on your device. Saved codes may include URLs, contact details, Wi-Fi credentials, or other information encoded in the original code. History is limited to the 200 most recent saved entries. ScanCode excludes its shared preferences from Android backup and device transfer.
+When you tap **Save** or add a new scan to a collection, the decoded text, code format and scan time are kept in app-private storage on your device. Saved codes may include URLs, contact details, Wi-Fi credentials, or other information encoded in the original code. History is limited to the 200 most recent saved entries. ScanCode excludes its shared preferences from Android backup and device transfer.
 
-History entries remain until you delete them, they fall outside the history limit, or you clear app data or uninstall the app. Open **History** to delete a code or select **Clear all** to delete the entire history. ScanCode has no user accounts.
+History entries remain until you delete them, they fall outside the history limit, or you clear app data or uninstall the app. Collection entries survive the history limit and clearing history. To fully remove a saved code, remove it from history and from every collection that contains it. Clearing app data or uninstalling the app removes both history and collections. ScanCode has no user accounts or ads.
+
+## Web link review
+
+ScanCode reads the destination and protocol on your device. The URL stays on your device during that review, and the site's reputation stays unchecked. Opening a link hands it to the associated Android app.
 
 ## Actions you choose
 
