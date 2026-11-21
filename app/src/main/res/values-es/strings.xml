@@ -44,7 +44,7 @@
     <string name="delete">Eliminar</string>
     <string name="clear_all">Borrar todo</string>
     <string name="clear_history_title">¿Borrar el historial?</string>
-    <string name="clear_history_message">Se eliminarán todos los códigos guardados en este dispositivo.</string>
+    <string name="clear_history_message">Se vaciará el historial. Los códigos en colecciones se conservarán.</string>
     <string name="history_title">Historial de escaneos</string>
     <string name="history_subtitle">Códigos que guardaste en este dispositivo.</string>
     <string name="history_search">Buscar códigos guardados</string>
@@ -59,7 +59,7 @@
     <string name="privacy">Privacidad</string>
     <string name="privacy_title">Política de privacidad de ScanCode</string>
     <string name="privacy_contact">Contactar al desarrollador</string>
-    <string name="privacy_body">ScanCode lee la cámara y las fotos en este dispositivo sin guardar las imágenes. El permiso de cámara es opcional.\n\nEl historial conserva hasta 200 códigos que decidas guardar, con su contenido, formato y hora. Se quedan en el almacenamiento privado hasta que los elimines o alcancen el límite. Puedes borrar el historial o quitar los datos de la app desde los ajustes de Android. El historial queda excluido de las copias y la transferencia de Android.\n\nAl abrir, buscar, copiar o compartir un código, se entregan sus datos a la función o aplicación que elegiste. Google ML Kit puede enviar a Google metadatos de la app y del dispositivo, un identificador de instalación y datos de diagnóstico y uso mediante una conexión cifrada.</string>
+    <string name="privacy_body">ScanCode lee la cámara y las fotos en este dispositivo sin guardar las imágenes. El permiso de cámara es opcional.\n\nEl historial conserva hasta 200 códigos guardados. Los códigos en colecciones se conservan aunque llegues a ese límite. Ambos se guardan en el almacenamiento privado y quedan excluidos de las copias y la transferencia de Android. La revisión de enlaces se realiza en el dispositivo.\n\nAl abrir, buscar, copiar o compartir un código, se entregan sus datos a la función o aplicación que elegiste. Google ML Kit puede enviar a Google metadatos de la app y del dispositivo, un identificador de instalación y datos de diagnóstico y uso mediante una conexión cifrada.</string>
     <string name="kind_text">Texto</string>
     <string name="kind_link">Enlace</string>
     <string name="kind_phone">Teléfono</string>
@@ -74,4 +74,29 @@
     <string name="wifi_network">Wi-Fi · %1$s</string>
     <string name="unknown_format">Código</string>
     <string name="photo_picker_unavailable">Este dispositivo no tiene selector de fotos.</string>
+    <string name="collections">Colecciones</string>
+    <string name="collection_add">Añadir a colecciones</string>
+    <string name="collection_count">Colecciones (%1$d)</string>
+    <string name="collection_choose">Guardar en colecciones</string>
+    <string name="collection_all_history">Todo el historial</string>
+    <string name="collection_new">Nueva colección</string>
+    <string name="collection_create">Crear</string>
+    <string name="collection_rename">Renombrar colección</string>
+    <string name="collection_delete">Eliminar colección</string>
+    <string name="collection_delete_title">¿Eliminar esta colección?</string>
+    <string name="collection_delete_message">Se conservarán los códigos del historial y de otras colecciones.</string>
+    <string name="collection_manage">Gestionar colección</string>
+    <string name="collection_name">Nombre de la colección</string>
+    <string name="collection_name_required">Escribe un nombre.</string>
+    <string name="collection_name_unavailable">Este nombre ya está en uso.</string>
+    <string name="collection_subtitle">Códigos guardados en esta colección.</string>
+    <string name="collection_empty_title">Esta colección está vacía</string>
+    <string name="collection_empty_detail">Abre un escaneo y elige Añadir a colecciones.</string>
+    <string name="link_review_title">Revisión del enlace</string>
+    <string name="link_https">HTTPS · Solicita una conexión cifrada</string>
+    <string name="link_http">HTTP · Enlace sin cifrado</string>
+    <string name="link_shortener">Acortador conocido. El destino final puede ser distinto.</string>
+    <string name="link_ip_address">Este enlace usa una dirección IP.</string>
+    <string name="link_internationalized_host">Dominio internacionalizado mostrado en su forma ASCII.</string>
+    <string name="link_reputation_unchecked">Revisión local. La reputación del sitio queda sin verificar.</string>
 </resources>

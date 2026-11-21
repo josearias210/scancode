@@ -10,7 +10,7 @@ To rebuild locally, use `./build.ps1` on Windows with Docker or run the Gradle c
 
 ## 1.1.0 verification
 
-The Docker build passed eight JVM tests and Android Lint with zero errors. The debug APK and unsigned release bundle passed the native alignment checks. An Android 16 emulator decoded a QR code from a simulated camera feed and read an EAN-13 and a photo containing two QR codes offline. Device tests also verified saving, searching, deleting, and clearing local history. The physical-device checks below cover real camera focus, low light, and the torch.
+The Docker build passed 17 JVM tests and Android Lint with zero errors. The debug APK and unsigned release bundle passed the native alignment checks. An Android 16 emulator decoded a QR code from a simulated camera feed and read an EAN-13 and a photo containing two QR codes offline. Device tests also verified saving, searching, deleting, and clearing local history. Offline tests verified HTTP and HTTPS review, opening existing history, and preserving collections after clearing history and restarting. The physical-device checks below cover real camera focus, low light, and the torch.
 
 ## Before the first submission
 
@@ -33,6 +33,8 @@ Use codes with fictional values, and check the behavior in light and dark mode.
 | Pick a photo containing several codes | ScanCode lists the detected codes for selection. A blank or unreadable photo gets specific feedback. |
 | Put the device offline and scan a local image | The bundled model decodes the image with networking disabled. |
 | Scan a web link, phone number and Wi-Fi code | Review each result before the external action. The Wi-Fi code offers settings and a separate password-copy control. |
+| Scan an HTTPS link and a known HTTP shortener while offline | Link review identifies the destination and protocol and keeps website reputation unchecked. No page opens unless you choose Open link. |
+| Collect a code, add it to a second collection, and clear history | The code appears in both collections after history is cleared. Removing one membership leaves the other available. |
 | Save the same code twice and restart the app | One entry remains. Search by code text or format, open an entry, cancel deletion, confirm deletion, and clear history. |
 | Rotate, resize, or enlarge text | Main controls remain reachable, camera coordinates follow the preview, and screen content clears the system bars and keyboard. |
 | Install over an earlier debug build with a matching key | Existing scans remain visible and can be deleted from History. |
