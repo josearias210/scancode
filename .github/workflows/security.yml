@@ -15,22 +15,39 @@ jobs:
   publication-guard:
     name: Public files and secrets
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           persist-credentials: false
-      - run: python3 scripts/check-public-files.py
-      - name: Scan Git history with redacted output
+      - name: Validate files in the proposed Git history
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 scripts/check-public-files.py --base "$BASE_SHA"
+      - name: Verify the Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - name: Validate GitHub Actions workflows
         run: |
+          docker run --rm --network none --volume "$PWD:/repo:ro" --workdir /repo \
+            rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+      - name: Scan committed files, changes and commit messages for secrets
+        shell: bash
+        run: |
+          image=zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          flags=(--redact=100 --ignore-gitleaks-allow --no-banner)
+          snapshot=$(mktemp -d)
+          trap 'rm -rf -- "$snapshot"' EXIT
+          git archive HEAD | tar -x -C "$snapshot"
+          docker run --rm --network none --volume "$snapshot:/snapshot:ro" "$image" \
+            dir "${flags[@]}" --max-archive-depth=2 /snapshot
           docker run --rm --network none \
             --volume "$PWD:/repo:ro" \
             --env GIT_CONFIG_COUNT=1 \
             --env GIT_CONFIG_KEY_0=safe.directory \
             --env GIT_CONFIG_VALUE_0=/repo \
-            zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            git --redact=100 --log-opts="--all --diff-merges=first-parent" /repo
+            "$image" git "${flags[@]}" --log-opts="--all HEAD --diff-merges=first-parent" /repo
+          git log --all HEAD --format=%B | docker run --rm -i --network none "$image" stdin "${flags[@]}"
 
   codeql:
     name: CodeQL (Java and Kotlin)
