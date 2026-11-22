@@ -64,6 +64,8 @@ GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware 
 
 The test captures `home-screen.png` while the app is visible. If a UI check fails, the test tries to capture the screen before closing the app. Docker leaves the PNG in the device subfolder under `app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/`. GitHub Actions keeps the screenshot, reports, and emulator log together for seven days in the `scancode-instrumented-test-reports` artifact on the workflow run page.
 
+After successful checks on a pull request from a branch in this repository, GitHub Actions updates one review comment with the screenshot, tested commit, and workflow link. Review images live on the separate `ci-evidence` branch. Pull requests from forks and Dependabot provide their screenshots through workflow artifacts.
+
 ## How it works
 
 ScanCode is an Android app written in Kotlin with Material 3 and Android Views. CameraX and ML Kit map detections into preview coordinates so the viewfinder can choose the nearest centered code. Android's photo picker grants access to the selected image. A bounded decoder handles image rotation and large photos off the UI thread.

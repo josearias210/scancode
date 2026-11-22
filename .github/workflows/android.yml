@@ -86,3 +86,82 @@ jobs:
             app/build/reports/lint-results-debug.*
             app/build/reports/tests/testDebugUnitTest/
           retention-days: 7
+
+  show-review-evidence:
+    name: Show screenshot in the pull request
+    needs: build
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: android-review-evidence
+      queue: max
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Publish the screenshot and update the evidence comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          repo_api="repos/$GITHUB_REPOSITORY"
+          current_head=$(gh api "$repo_api/pulls/$PR_NUMBER" --jq .head.sha)
+          if [[ "$current_head" != "$PR_HEAD" ]]; then
+            echo "The pull request has a newer commit."
+            exit 0
+          fi
+
+          evidence_dir="$RUNNER_TEMP/review-evidence"
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name scancode-instrumented-test-reports --dir "$evidence_dir"
+          screenshot=$(find "$evidence_dir" -type f -name home-screen.png -print -quit)
+          test -n "$screenshot"
+          test "$(file --brief --mime-type "$screenshot")" = image/png
+
+          # Keep review images out of the application's Git history.
+          branch=ci-evidence
+          if ! gh api "$repo_api/git/ref/heads/$branch" --silent 2>/dev/null; then
+            tree=$(gh api --method POST "$repo_api/git/trees" --input - --jq .sha <<< '{"tree":[]}')
+            root=$(gh api --method POST "$repo_api/git/commits" -f message='Initialize CI evidence' -f tree="$tree" --jq .sha)
+            gh api --method POST "$repo_api/git/refs" -f ref="refs/heads/$branch" -f sha="$root" --silent
+          fi
+          image_path="pr-$PR_NUMBER/home-screen.png"
+          image_api="$repo_api/contents/$image_path"
+          previous=$(gh api "$image_api?ref=$branch" --jq .sha 2>/dev/null || true)
+          update=()
+          if [[ -n "$previous" ]]; then
+            update=(-f "sha=$previous")
+          fi
+          base64 -w0 "$screenshot" > "$evidence_dir/image.b64"
+          image_commit=$(gh api --method PUT "$image_api" -f branch="$branch" \
+            -f "message=Android home screen for PR #$PR_NUMBER" \
+            -F "content=@$evidence_dir/image.b64" "${update[@]}" --jq .commit.sha)
+
+          marker='<!-- scancode-android-review-evidence -->'
+          body="$evidence_dir/comment.md"
+          cat > "$body" <<EOF
+          $marker
+          ### Android smoke test passed
+
+          ScanCode opened on Android 16 and displayed the scanner title and **History** button.
+
+          [Tested PR commit ${PR_HEAD:0:7}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$PR_HEAD) · [Workflow run and test reports]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)
+
+          ![ScanCode home screen on Android 16](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$image_commit/$image_path)
+          EOF
+          comments_api="$repo_api/issues/$PR_NUMBER/comments"
+          comment=$(gh api "$comments_api" --paginate --jq \
+            '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- scancode-android-review-evidence -->"))) | .id' | tail -n 1)
+          if [[ -n "$comment" ]]; then
+            gh api --method PATCH "$repo_api/issues/comments/$comment" -F "body=@$body" --jq .html_url
+          else
+            gh api --method POST "$comments_api" -F "body=@$body" --jq .html_url
+          fi
