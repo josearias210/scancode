@@ -54,13 +54,14 @@ jobs:
       - name: Test app launch on an Android emulator
         run: bash scripts/run-android-emulator-tests.sh "$RUNNER_TEMP/scancode-emulator.log"
 
-      - name: Keep Android instrumented test reports
+      - name: Keep Android instrumented test evidence
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scancode-instrumented-test-reports
           path: |
             app/build/outputs/androidTest-results/connected/debug/
+            app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/
             app/build/reports/androidTests/connected/debug/
             ${{ runner.temp }}/scancode-emulator.log
           retention-days: 7

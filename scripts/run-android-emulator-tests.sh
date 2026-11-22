@@ -6,6 +6,7 @@ acceleration="${2:-on}"
 api_level="${3:-36}"
 system_image="system-images;android-$api_level;aosp_atd;x86_64"
 test_results=app/build/outputs/androidTest-results/connected/debug
+test_artifacts=app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected
 avd_name=scancode-test
 emulator_port=5554
 boot_timeout=300
@@ -67,5 +68,11 @@ bash ./gradlew --no-daemon :app:connectedDebugAndroidTest
 if [[ ! -d "$test_results" ]] || ! find "$test_results" -name 'TEST-*.xml' -newer "$test_started" \
     -exec grep -lE '<testcase[[:space:]]' {} + | grep .; then
   echo "The Android run produced no test cases. See $emulator_log for emulator diagnostics." >&2
+  exit 1
+fi
+
+if [[ ! -d "$test_artifacts" ]] || ! find "$test_artifacts" -type f -name 'home-screen.png' \
+    -newer "$test_started" -size +0c -print | grep .; then
+  echo "The Android run did not export a new home-screen.png." >&2
   exit 1
 fi

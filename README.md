@@ -60,7 +60,9 @@ From the project root on x86-64 Windows with Docker Desktop, run:
 
 Docker downloads the emulator and an Android 11 AOSP Automated Test Device image on the first build. The local emulator runs in software mode, so startup can take several minutes. The report is at `app/build/reports/androidTests/connected/debug/index.html` and the emulator log is at `app/build/reports/androidTests/emulator.log`.
 
-GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware acceleration. Both environments run `:app:connectedDebugAndroidTest`, which opens ScanCode from its launcher entry and checks that the scanner title and **History** button are visible. CI keeps the reports in the `scancode-instrumented-test-reports` artifact.
+GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware acceleration. Both environments run `:app:connectedDebugAndroidTest`, which opens ScanCode from its launcher entry and checks that the scanner title and **History** button are visible.
+
+The test captures `home-screen.png` while the app is visible. If a UI check fails, the test tries to capture the screen before closing the app. Docker leaves the PNG in the device subfolder under `app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/`. GitHub Actions keeps the screenshot, reports, and emulator log together for seven days in the `scancode-instrumented-test-reports` artifact on the workflow run page.
 
 ## How it works
 

@@ -1,6 +1,8 @@
 package com.scancode.app
 
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.DeviceCapture
+import androidx.test.core.graphics.writeToTestStorage
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -20,8 +22,18 @@ class HomeScreenTest {
         }
 
         ActivityScenario.launch<MainActivity>(launchIntent).use {
-            onView(withId(R.id.scanTitle)).check(matches(isDisplayed()))
-            onView(withId(R.id.historyButton)).check(matches(isDisplayed()))
+            runCatching {
+                onView(withId(R.id.scanTitle)).check(matches(isDisplayed()))
+                onView(withId(R.id.historyButton)).check(matches(isDisplayed()))
+            }.onFailure { assertionFailure ->
+                runCatching { saveHomeScreen() }.onFailure(assertionFailure::addSuppressed)
+            }.getOrThrow()
+
+            saveHomeScreen()
         }
+    }
+
+    private fun saveHomeScreen() {
+        DeviceCapture.takeScreenshot().writeToTestStorage("home-screen")
     }
 }
