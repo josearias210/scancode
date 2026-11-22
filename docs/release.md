@@ -4,9 +4,9 @@ ScanCode 1.1.0 uses the existing application ID `com.scancode.app` and increment
 
 ## Build artifacts
 
-The [Android workflow](../.github/workflows/android.yml) runs on pull requests, pushes to `main` or `master`, and manual dispatch. It runs Android Lint, JVM tests, and an emulator startup test. It builds an installable debug APK and an unsigned release App Bundle and verifies 16 KiB APK alignment and 64-bit native library alignment in the bundle. Emulator test reports and default-branch build artifacts are retained for seven days. The workflow uses a GitHub-hosted runner and read-only repository access.
+The [Android workflow](../.github/workflows/android.yml) runs on pull requests, pushes to `main` or `master`, and manual dispatch. It runs Android Lint, JVM tests, and an emulator startup test. It verifies 16 KiB APK alignment and the 64-bit native libraries in the unsigned release bundle. After the emulator test passes, the workflow verifies the signature of the tested debug APK and uploads it as `scancode.apk`. The APK downloads directly from the run summary or **Artifacts** for seven days. GitHub requires sign-in to download it.
 
-To rebuild locally, use `./build.ps1` on Windows with Docker or run the Gradle command in the [README](../README.md). The Docker script keeps its debug signing key in a local Docker volume so later local debug builds can update the app in place. Keep that volume while testing upgrades. Debug APKs built in other environments can have a different signing key. Inspect the native libraries and package alignment when updating CameraX, ML Kit, or the Android Gradle Plugin. [Android 16 KB page size checks](https://developer.android.com/guide/practices/page-sizes)
+Gradle creates a self-signed debug key in the build environment's user Android directory. On Windows with Docker, `build.ps1` keeps it at `/root/.android/debug.keystore` inside the `scancode-android-home` Docker volume. A GitHub-hosted runner uses its own debug keystore. Keep the Docker volume when testing local upgrades. Android accepts in-place updates signed with the same certificate. If the installed copy has a different signer, uninstalling it before a fresh installation removes its local app data. [Android app signing](https://developer.android.com/studio/publish/app-signing)
 
 ## 1.1.0 verification
 

@@ -25,6 +25,14 @@ The scanner supports QR, Aztec, Data Matrix, PDF417, EAN-8, EAN-13, UPC-A, UPC-E
 
 ## Build and run
 
+### Download the APK from GitHub Actions
+
+Open a successful [Android build run](https://github.com/josearias210/scancode/actions/workflows/android.yml) and select **Download the ScanCode APK** in the summary, or download `scancode.apk` under **Artifacts**. The APK is available for seven days and requires signing in to GitHub. Open the downloaded file on an Android 8.0 or later device to install it.
+
+The APK uses a self-signed Android debug certificate. Android updates an installed copy in place only if the signing certificate matches. Check the [signing and installation details](docs/release.md#build-artifacts) when switching between CI and local builds.
+
+### Build locally
+
 **Windows with Docker Desktop**
 
 ```powershell
