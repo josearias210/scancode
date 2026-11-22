@@ -1,7 +1,6 @@
 package com.scancode.app
 
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.DeviceCapture
 import androidx.test.core.graphics.writeToTestStorage
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -34,6 +33,8 @@ class HomeScreenTest {
     }
 
     private fun saveHomeScreen() {
-        DeviceCapture.takeScreenshot().writeToTestStorage("home-screen")
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val screenshot = checkNotNull(automation.takeScreenshot()) { "Android could not capture the screen" }
+        screenshot.writeToTestStorage("home-screen")
     }
 }
