@@ -128,22 +128,27 @@ jobs:
 
           # Keep review images out of the application's Git history.
           branch=ci-evidence
-          if ! gh api "$repo_api/git/ref/heads/$branch" --silent 2>/dev/null; then
-            tree=$(gh api --method POST "$repo_api/git/trees" --input - --jq .sha <<< '{"tree":[]}')
-            root=$(gh api --method POST "$repo_api/git/commits" -f message='Initialize CI evidence' -f tree="$tree" --jq .sha)
-            gh api --method POST "$repo_api/git/refs" -f ref="refs/heads/$branch" -f sha="$root" --silent
-          fi
           image_path="pr-$PR_NUMBER/home-screen.png"
-          image_api="$repo_api/contents/$image_path"
-          previous=$(gh api "$image_api?ref=$branch" --jq .sha 2>/dev/null || true)
-          update=()
-          if [[ -n "$previous" ]]; then
-            update=(-f "sha=$previous")
+          message="Android home screen for PR #$PR_NUMBER"
+          encoded="$evidence_dir/image.b64"
+          base64 -w0 "$screenshot" > "$encoded"
+          if gh api "$repo_api/git/ref/heads/$branch" --silent 2>/dev/null; then
+            image_api="$repo_api/contents/$image_path"
+            previous=$(gh api "$image_api?ref=$branch" --jq .sha 2>/dev/null || true)
+            update=()
+            if [[ -n "$previous" ]]; then
+              update=(-f "sha=$previous")
+            fi
+            image_commit=$(gh api --method PUT "$image_api" -f branch="$branch" -f message="$message" \
+              -F "content=@$encoded" "${update[@]}" --jq .commit.sha)
+          else
+            blob=$(gh api "$repo_api/git/blobs" -f encoding=base64 -F "content=@$encoded" --jq .sha)
+            tree=$(jq -n --arg path "$image_path" --arg sha "$blob" \
+              '{tree:[{path:$path, mode:"100644", type:"blob", sha:$sha}]}' |
+              gh api --method POST "$repo_api/git/trees" --input - --jq .sha)
+            image_commit=$(gh api "$repo_api/git/commits" -f message="$message" -f tree="$tree" --jq .sha)
+            gh api "$repo_api/git/refs" -f ref="refs/heads/$branch" -f sha="$image_commit" --silent
           fi
-          base64 -w0 "$screenshot" > "$evidence_dir/image.b64"
-          image_commit=$(gh api --method PUT "$image_api" -f branch="$branch" \
-            -f "message=Android home screen for PR #$PR_NUMBER" \
-            -F "content=@$evidence_dir/image.b64" "${update[@]}" --jq .commit.sha)
 
           marker='<!-- scancode-android-review-evidence -->'
           body="$evidence_dir/comment.md"
