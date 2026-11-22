@@ -40,8 +40,11 @@ avdmanager create avd --force --name "$avd_name" --package "$system_image" <<< '
 emulator_pid=$!
 
 echo "Waiting for the Android API $api_level emulator to boot (acceleration: $acceleration)."
+# Gradle's device discovery needs a response to getprop within two seconds.
 if ! timeout "$boot_timeout" bash -c '
-  until [[ $(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r") == 1 ]] &&
+  until properties=$(timeout 2 adb shell getprop 2>/dev/null) &&
+      grep -Fq "[sys.boot_completed]: [1]" <<< "$properties" &&
+      grep -Fq "[ro.build.version.sdk]: [$2]" <<< "$properties" &&
       adb shell service check package 2>/dev/null | grep -q ": found" &&
       adb shell service check activity 2>/dev/null | grep -q ": found"; do
     if ! kill -0 "$1" 2>/dev/null; then
@@ -50,7 +53,7 @@ if ! timeout "$boot_timeout" bash -c '
     fi
     sleep 2
   done
-' _ "$emulator_pid"; then
+' _ "$emulator_pid" "$api_level"; then
   tail -n 60 "$emulator_log" >&2
   exit 1
 fi
