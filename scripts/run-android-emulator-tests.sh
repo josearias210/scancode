@@ -65,7 +65,19 @@ adb shell settings put global animator_duration_scale 0
 
 test_started="$ANDROID_AVD_HOME/test-started"
 touch "$test_started"
-bash ./gradlew --no-daemon :app:connectedDebugAndroidTest
+gradle_log="$ANDROID_AVD_HOME/instrumentation.log"
+for attempt in 1 2 3; do
+  if bash ./gradlew --no-daemon --console=plain :app:connectedDebugAndroidTest 2>&1 | tee "$gradle_log"; then
+    break
+  fi
+  if [[ "$acceleration" != off || "$attempt" == 3 ]] ||
+      ! grep -Fq 'Unknown API Level' "$gradle_log" ||
+      ! grep -Fq '0 of which were compatible.' "$gradle_log"; then
+    exit 1
+  fi
+  echo "Gradle could not identify the software emulator. Retrying after Android settles."
+  sleep 15
+done
 
 # Gradle can finish successfully after an APK installation error without running any tests.
 if [[ ! -d "$test_results" ]] || ! find "$test_results" -name 'TEST-*.xml' -newer "$test_started" \
