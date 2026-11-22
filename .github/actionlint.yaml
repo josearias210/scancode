@@ -1,0 +1,6 @@
+paths:
+  .github/workflows/android.yml:
+    ignore:
+      # GitHub supports concurrency.queue, but actionlint does not yet parse it.
+      # Remove when https://github.com/rhysd/actionlint/issues/657 is resolved.
+      - '^unexpected key "queue" for "concurrency" section\.'
