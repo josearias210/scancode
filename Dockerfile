@@ -18,4 +18,13 @@ RUN mkdir -p $ANDROID_HOME/cmdline-tools \
 RUN yes | sdkmanager --licenses > /dev/null \
     && sdkmanager "platforms;android-37.0" "build-tools;37.0.0" "platform-tools"
 
+ARG INCLUDE_ANDROID_EMULATOR=false
+RUN if [ "$INCLUDE_ANDROID_EMULATOR" = true ]; then \
+      sdkmanager --install emulator 'system-images;android-36;google_apis;x86_64'; \
+    fi
+RUN if [ "$INCLUDE_ANDROID_EMULATOR" = true ]; then \
+      apt-get update && apt-get install -y --no-install-recommends libx11-6 libx11-xcb1 \
+      && rm -rf /var/lib/apt/lists/*; \
+    fi
+
 WORKDIR /project

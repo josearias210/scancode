@@ -52,13 +52,15 @@ Install the debug build on a connected Android 8.0 or later device or emulator w
 
 ### Test app launch on an emulator
 
-Start an Android emulator from Android Studio's Device Manager. Use API 36 to match CI, then run the instrumented test with your local Android SDK from the project root.
+From the project root on x86-64 Windows with Docker Desktop, run:
 
 ```powershell
-.\gradlew.bat :app:connectedDebugAndroidTest
+.\build.ps1 -InstrumentedTest
 ```
 
-On macOS or Linux, use `bash ./gradlew :app:connectedDebugAndroidTest`. The test opens ScanCode through its launcher entry and checks that the scanner title and **History** button are visible. Open `app/build/reports/androidTests/connected/debug/index.html` for the local report. GitHub Actions runs the same task and keeps the results in the `scancode-instrumented-test-reports` artifact.
+Docker downloads the Android 16 emulator and SDK image on the first build. The local emulator runs in software mode, so startup can take several minutes. The report is at `app/build/reports/androidTests/connected/debug/index.html` and the emulator log is at `app/build/reports/androidTests/emulator.log`.
+
+GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware acceleration. Both environments run `:app:connectedDebugAndroidTest`, which opens ScanCode from its launcher entry and checks that the scanner title and **History** button are visible. CI keeps the reports in the `scancode-instrumented-test-reports` artifact.
 
 ## How it works
 
