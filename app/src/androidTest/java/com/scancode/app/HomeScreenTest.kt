@@ -3,8 +3,10 @@ package com.scancode.app
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.graphics.writeToTestStorage
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.captureToBitmap
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,8 +35,8 @@ class HomeScreenTest {
     }
 
     private fun saveHomeScreen() {
-        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
-        val screenshot = checkNotNull(automation.takeScreenshot()) { "Android could not capture the screen" }
-        screenshot.writeToTestStorage("home-screen")
+        onView(isRoot()).perform(captureToBitmap { bitmap ->
+            bitmap.writeToTestStorage("home-screen")
+        })
     }
 }
