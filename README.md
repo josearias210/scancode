@@ -33,7 +33,7 @@ The scanner supports QR, Aztec, Data Matrix, PDF417, EAN-8, EAN-13, UPC-A, UPC-E
 
 **Android Studio or command line**
 
-Use JDK 17, Android SDK Platform 36 and Build Tools 36.0.0. Open the root project in Android Studio and run the `app` configuration, or run the Gradle Wrapper from the root.
+Use JDK 17, Android SDK Platform 37.0 and Build Tools 37.0.0. Open the root project in Android Studio and run the `app` configuration, or run the Gradle Wrapper from the root.
 
 ```sh
 bash ./gradlew :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
