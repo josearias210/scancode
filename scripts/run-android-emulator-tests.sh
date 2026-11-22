@@ -3,7 +3,7 @@ set -euo pipefail
 
 emulator_log="${1:?Provide the emulator log path}"
 acceleration="${2:-on}"
-system_image='system-images;android-36;google_apis;x86_64'
+system_image='system-images;android-36;aosp_atd;x86_64'
 avd_name=scancode-test
 emulator_port=5554
 boot_timeout=300
@@ -13,7 +13,7 @@ if [[ "$acceleration" == off ]]; then
 fi
 
 if [[ ! -x "$ANDROID_HOME/emulator/emulator" ||
-      ! -f "$ANDROID_HOME/system-images/android-36/google_apis/x86_64/package.xml" ]]; then
+      ! -f "$ANDROID_HOME/system-images/android-36/aosp_atd/x86_64/package.xml" ]]; then
   sdkmanager --install emulator platform-tools "$system_image"
 fi
 mkdir -p "$(dirname "$emulator_log")"

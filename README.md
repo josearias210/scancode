@@ -58,7 +58,7 @@ From the project root on x86-64 Windows with Docker Desktop, run:
 .\build.ps1 -InstrumentedTest
 ```
 
-Docker downloads the Android 16 emulator and SDK image on the first build. The local emulator runs in software mode, so startup can take several minutes. The report is at `app/build/reports/androidTests/connected/debug/index.html` and the emulator log is at `app/build/reports/androidTests/emulator.log`.
+Docker downloads the emulator and the Android 16 AOSP Automated Test Device image on the first build. The local emulator runs in software mode, so startup can take several minutes. The report is at `app/build/reports/androidTests/connected/debug/index.html` and the emulator log is at `app/build/reports/androidTests/emulator.log`.
 
 GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware acceleration. Both environments run `:app:connectedDebugAndroidTest`, which opens ScanCode from its launcher entry and checks that the scanner title and **History** button are visible. CI keeps the reports in the `scancode-instrumented-test-reports` artifact.
 

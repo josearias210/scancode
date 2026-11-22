@@ -20,7 +20,7 @@ RUN yes | sdkmanager --licenses > /dev/null \
 
 ARG INCLUDE_ANDROID_EMULATOR=false
 RUN if [ "$INCLUDE_ANDROID_EMULATOR" = true ]; then \
-      sdkmanager --install emulator 'system-images;android-36;google_apis;x86_64'; \
+      sdkmanager --install emulator 'system-images;android-36;aosp_atd;x86_64'; \
     fi
 RUN if [ "$INCLUDE_ANDROID_EMULATOR" = true ]; then \
       apt-get update && apt-get install -y --no-install-recommends libx11-6 libx11-xcb1 \
