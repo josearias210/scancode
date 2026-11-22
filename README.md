@@ -62,9 +62,11 @@ Docker downloads the emulator and an Android 11 AOSP Automated Test Device image
 
 GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware acceleration. Both environments run `:app:connectedDebugAndroidTest`, which opens ScanCode from its launcher entry and checks that the scanner title and **History** button are visible.
 
-The test captures `home-screen.png` while the app is visible. If a UI check fails, the test tries to capture the screen before closing the app. Docker leaves the PNG in the device subfolder under `app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/`. GitHub Actions keeps the screenshot, reports, and emulator log together for seven days in the `scancode-instrumented-test-reports` artifact on the workflow run page.
+The test captures `home-screen.png` while the app is visible. If a UI check fails, it tries to capture the screen before closing the app. Docker leaves the PNG in the device subfolder under `app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/`.
 
-After successful checks on a pull request from a branch in this repository, GitHub Actions updates one review comment with the screenshot, tested commit, and workflow link. Review images live on the separate `ci-evidence` branch. Pull requests from forks and Dependabot provide their screenshots through workflow artifacts.
+**GitHub Actions.** Open the **Android build** run and look under **Artifacts**. Each attempt keeps its own screenshot, test reports, and emulator log for seven days in `scancode-instrumented-test-reports-<attempt>`. This includes runs started with **Run workflow** and retries started with **Re-run jobs**.
+
+**Pull requests.** For branches in this repository, the workflow creates one evidence comment and edits that same comment on later runs. A new screenshot replaces the image in the comment. The comment links to the tested commit, the workflow attempt, and its report. If the emulator exports reports without a screenshot, the comment shows that outcome. To refresh the evidence manually, run **Android build** on the branch of an open pull request. Runs for branches without an open pull request, forks, and Dependabot keep their evidence in workflow artifacts. The PNGs used in review comments are stored on the separate `ci-evidence` branch.
 
 ## How it works
 
