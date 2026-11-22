@@ -29,6 +29,11 @@ android {
 
 dependencies {
     constraints {
+        // CameraX pulls in Guava Android through its video dependencies.
+        implementation("com.google.guava:guava:33.8.0-android") {
+            because("GHSA-xxph-c9ww-hj94 is fixed in Guava 33.7.2 and later")
+        }
+
         // AGP resolves the Lint tool on a separate classpath from the buildscript.
         add("androidLintTool", "com.google.guava:guava:33.8.0-jre")
         add("androidLintTool", "org.apache.commons:commons-lang3:3.22.0")
