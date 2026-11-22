@@ -3,7 +3,9 @@ set -euo pipefail
 
 emulator_log="${1:?Provide the emulator log path}"
 acceleration="${2:-on}"
-system_image='system-images;android-36;aosp_atd;x86_64'
+api_level="${3:-36}"
+system_image="system-images;android-$api_level;aosp_atd;x86_64"
+test_results=app/build/outputs/androidTest-results/connected/debug
 avd_name=scancode-test
 emulator_port=5554
 boot_timeout=300
@@ -13,7 +15,7 @@ if [[ "$acceleration" == off ]]; then
 fi
 
 if [[ ! -x "$ANDROID_HOME/emulator/emulator" ||
-      ! -f "$ANDROID_HOME/system-images/android-36/aosp_atd/x86_64/package.xml" ]]; then
+      ! -f "$ANDROID_HOME/system-images/android-$api_level/aosp_atd/x86_64/package.xml" ]]; then
   sdkmanager --install emulator platform-tools "$system_image"
 fi
 mkdir -p "$(dirname "$emulator_log")"
@@ -36,9 +38,11 @@ avdmanager create avd --force --name "$avd_name" --package "$system_image" <<< '
   -camera-front none -camera-back none > "$emulator_log" 2>&1 &
 emulator_pid=$!
 
-echo "Waiting for the Android emulator to boot (acceleration: $acceleration)."
+echo "Waiting for the Android API $api_level emulator to boot (acceleration: $acceleration)."
 if ! timeout "$boot_timeout" bash -c '
-  while [[ $(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r") != 1 ]]; do
+  until [[ $(adb shell getprop sys.boot_completed 2>/dev/null | tr -d "\r") == 1 ]] &&
+      adb shell service check package 2>/dev/null | grep -q ": found" &&
+      adb shell service check activity 2>/dev/null | grep -q ": found"; do
     if ! kill -0 "$1" 2>/dev/null; then
       echo "The Android emulator exited before boot completed." >&2
       exit 1
@@ -54,4 +58,14 @@ adb shell input keyevent 82
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
+
+test_started="$ANDROID_AVD_HOME/test-started"
+touch "$test_started"
 bash ./gradlew --no-daemon :app:connectedDebugAndroidTest
+
+# Gradle can finish successfully after an APK installation error without running any tests.
+if [[ ! -d "$test_results" ]] || ! find "$test_results" -name 'TEST-*.xml' -newer "$test_started" \
+    -exec grep -lE '<testcase[[:space:]]' {} + | grep .; then
+  echo "The Android run produced no test cases. See $emulator_log for emulator diagnostics." >&2
+  exit 1
+fi

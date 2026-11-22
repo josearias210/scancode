@@ -15,7 +15,7 @@ if ($InstrumentedTest) {
     $buildArguments = @('--build-arg', 'INCLUDE_ANDROID_EMULATOR=true')
     $containerArguments = @(
         'bash', 'scripts/run-android-emulator-tests.sh',
-        'app/build/reports/androidTests/emulator.log', 'off'
+        'app/build/reports/androidTests/emulator.log', 'off', '30'
     )
 }
 
