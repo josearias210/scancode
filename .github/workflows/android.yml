@@ -5,6 +5,11 @@ on:
     branches: [main, master]
   pull_request:
   workflow_dispatch:
+    inputs:
+      use_hostinger:
+        description: Run the build on the Hostinger VPS
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -16,8 +21,13 @@ concurrency:
 jobs:
   build:
     name: Lint, test and build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    runs-on: >-
+      ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SCANCODE_HOSTINGER_ENABLED == 'true') ||
+          (github.event_name == 'workflow_dispatch' && inputs.use_hostinger && github.ref_type == 'branch' && github.actor == 'josearias210'))
+          && 'scancode-hostinger' || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    outputs:
+      used_hostinger: ${{ runner.environment == 'self-hosted' }}
 
     steps:
       - name: Check out sources
@@ -40,7 +50,13 @@ jobs:
           packages: 'platforms;android-37.0 build-tools;37.0.0'
 
       - name: Lint, test and build
-        run: bash ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
+        shell: bash
+        run: |
+          build_options=(--no-daemon)
+          if [[ "$RUNNER_ENVIRONMENT" == self-hosted ]]; then
+            build_options+=(--max-workers=1)
+          fi
+          bash ./gradlew "${build_options[@]}" :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
 
       - name: Check 16 KiB native alignment
         run: |
@@ -49,13 +65,15 @@ jobs:
             app/build/outputs/bundle/release/app-release.aab
 
       - name: Enable Android emulator acceleration
+        if: runner.environment == 'github-hosted'
         run: sudo chmod a+rw /dev/kvm
 
       - name: Test app launch on an Android emulator
+        if: runner.environment == 'github-hosted'
         run: bash scripts/run-android-emulator-tests.sh "$RUNNER_TEMP/scancode-emulator.log"
 
       - name: Keep Android instrumented test evidence
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && runner.environment == 'github-hosted' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: scancode-instrumented-test-reports
@@ -85,6 +103,44 @@ jobs:
           path: |
             app/build/reports/lint-results-debug.*
             app/build/reports/tests/testDebugUnitTest/
+          retention-days: 7
+
+  emulator:
+    name: Test Android on an emulator
+    needs: build
+    if: needs.build.outputs.used_hostinger == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up JDK 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          packages: 'platforms;android-37.0 build-tools;37.0.0'
+      - name: Enable Android emulator acceleration
+        run: sudo chmod a+rw /dev/kvm
+      - name: Test app launch on an Android emulator
+        run: bash scripts/run-android-emulator-tests.sh "$RUNNER_TEMP/scancode-emulator.log"
+      - name: Keep Android instrumented test evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: scancode-instrumented-test-reports
+          path: |
+            app/build/outputs/androidTest-results/connected/debug/
+            app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/
+            app/build/reports/androidTests/connected/debug/
+            ${{ runner.temp }}/scancode-emulator.log
           retention-days: 7
 
   show-review-evidence:
