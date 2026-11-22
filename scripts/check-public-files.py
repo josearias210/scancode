@@ -15,7 +15,7 @@ ROOT_FILES = {
     "gradle.properties", "gradlew", "gradlew.bat", "settings.gradle.kts",
 }
 PROJECT_FILES = {
-    ".github/dependabot.yml", "app/build.gradle.kts",
+    ".github/actionlint.yaml", ".github/dependabot.yml", "app/build.gradle.kts",
     "gradle/wrapper/gradle-wrapper.jar", "gradle/wrapper/gradle-wrapper.properties",
     "docs/release.md", "docs/usage.md", "docs/store/README.md", "docs/store/app-icon.png",
     "docs/store/feature-graphic.png", "docs/screenshots/history.png",
