@@ -64,7 +64,7 @@ GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware 
 
 The test captures `home-screen.png` while the app is visible. If a UI check fails, it tries to capture the screen before closing the app. Docker leaves the PNG in the device subfolder under `app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/`.
 
-**GitHub Actions.** Open the **Android build** run and look under **Artifacts**. Each attempt keeps its own screenshot, test reports, and emulator log for seven days in `scancode-instrumented-test-reports-<attempt>`. This includes runs started with **Run workflow** and retries started with **Re-run jobs**.
+**GitHub Actions.** Open the **Android build** run and look under **Artifacts**. When the emulator job exports evidence, its screenshot, test reports, and emulator log are available in `scancode-instrumented-test-reports-<attempt>` for up to seven days. This includes runs started with **Run workflow**. After **Re-run jobs**, GitHub can replace the previous attempt's artifact with the new one.
 
 **Pull requests.** For branches in this repository, the workflow creates one evidence comment and edits that same comment on later runs. A new screenshot replaces the image in the comment. The comment links to the tested commit, the workflow attempt, and its report. If the emulator exports reports without a screenshot, the comment shows that outcome. To refresh the evidence manually, run **Android build** on the branch of an open pull request. Runs for branches without an open pull request, forks, and Dependabot keep their evidence in workflow artifacts. The PNGs used in review comments are stored on the separate `ci-evidence` branch.
 
