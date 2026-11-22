@@ -50,6 +50,16 @@ On Windows outside Docker, replace `bash ./gradlew` with `.\gradlew.bat`.
 
 Install the debug build on a connected Android 8.0 or later device or emulator with `adb install -r app/build/outputs/apk/debug/app-debug.apk`. Tap **Enable camera** for live scanning, or tap **Photo** to scan without camera access.
 
+### Test app launch on an emulator
+
+Start an Android emulator from Android Studio's Device Manager. Use API 36 to match CI, then run the instrumented test with your local Android SDK from the project root.
+
+```powershell
+.\gradlew.bat :app:connectedDebugAndroidTest
+```
+
+On macOS or Linux, use `bash ./gradlew :app:connectedDebugAndroidTest`. The test opens ScanCode through its launcher entry and checks that the scanner title and **History** button are visible. Open `app/build/reports/androidTests/connected/debug/index.html` for the local report. GitHub Actions runs the same task and keeps the results in the `scancode-instrumented-test-reports` artifact.
+
 ## How it works
 
 ScanCode is an Android app written in Kotlin with Material 3 and Android Views. CameraX and ML Kit map detections into preview coordinates so the viewfinder can choose the nearest centered code. Android's photo picker grants access to the selected image. A bounded decoder handles image rotation and large photos off the UI thread.
@@ -68,4 +78,4 @@ ScanCode is a noncommercial project with no advertising.
 - [Contribution guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 
-The [Android build workflow](.github/workflows/android.yml) runs lint and unit tests, builds the APK and unsigned App Bundle, and keeps the results as workflow artifacts.
+The [Android build workflow](.github/workflows/android.yml) runs lint, JVM tests, and the emulator startup test. It builds the APK and unsigned App Bundle and keeps reports as workflow artifacts.
