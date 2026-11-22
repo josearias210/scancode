@@ -52,13 +52,7 @@ jobs:
         run: sudo chmod a+rw /dev/kvm
 
       - name: Test app launch on an Android emulator
-        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
-        with:
-          api-level: 36
-          arch: x86_64
-          target: google_apis
-          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim
-          script: bash ./gradlew --no-daemon :app:connectedDebugAndroidTest
+        run: bash scripts/run-android-emulator-tests.sh "$RUNNER_TEMP/scancode-emulator.log"
 
       - name: Keep Android instrumented test reports
         if: ${{ !cancelled() }}
@@ -68,6 +62,7 @@ jobs:
           path: |
             app/build/outputs/androidTest-results/connected/debug/
             app/build/reports/androidTests/connected/debug/
+            ${{ runner.temp }}/scancode-emulator.log
           retention-days: 7
 
       - name: Keep build artifacts
