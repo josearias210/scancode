@@ -50,6 +50,24 @@ On Windows outside Docker, replace `bash ./gradlew` with `.\gradlew.bat`.
 
 Install the debug build on a connected Android 8.0 or later device or emulator with `adb install -r app/build/outputs/apk/debug/app-debug.apk`. Tap **Enable camera** for live scanning, or tap **Photo** to scan without camera access.
 
+### Test app launch on an emulator
+
+From the project root on x86-64 Windows with Docker Desktop, run:
+
+```powershell
+.\build.ps1 -InstrumentedTest
+```
+
+Docker downloads the emulator and an Android 11 AOSP Automated Test Device image on the first build. The local emulator runs in software mode, so startup can take several minutes. The report is at `app/build/reports/androidTests/connected/debug/index.html` and the emulator log is at `app/build/reports/androidTests/emulator.log`.
+
+GitHub Actions starts an Android 16 emulator on its Ubuntu runner with hardware acceleration. Both environments run `:app:connectedDebugAndroidTest`, which opens ScanCode from its launcher entry and checks that the scanner title and **History** button are visible.
+
+The test captures `home-screen.png` while the app is visible. If a UI check fails, it tries to capture the screen before closing the app. Docker leaves the PNG in the device subfolder under `app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/`.
+
+**GitHub Actions.** Open the **Android build** run and look under **Artifacts**. When the emulator job exports evidence, its screenshot, test reports, and emulator log are available in `scancode-instrumented-test-reports-<attempt>` for up to seven days. This includes runs started with **Run workflow**. After **Re-run jobs**, GitHub can replace the previous attempt's artifact with the new one.
+
+**Pull requests.** For branches in this repository, the workflow creates one evidence comment and edits that same comment on later runs. A new screenshot replaces the image in the comment. The comment links to the tested commit, the workflow attempt, and its report. If the emulator exports reports without a screenshot, the comment shows that outcome. To refresh the evidence manually, run **Android build** on the branch of an open pull request. Runs for branches without an open pull request, forks, and Dependabot keep their evidence in workflow artifacts. The PNGs used in review comments are stored on the separate `ci-evidence` branch.
+
 ## How it works
 
 ScanCode is an Android app written in Kotlin with Material 3 and Android Views. CameraX and ML Kit map detections into preview coordinates so the viewfinder can choose the nearest centered code. Android's photo picker grants access to the selected image. A bounded decoder handles image rotation and large photos off the UI thread.
@@ -68,4 +86,4 @@ ScanCode is a noncommercial project with no advertising.
 - [Contribution guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 
-The [Android build workflow](.github/workflows/android.yml) runs lint and unit tests, builds the APK and unsigned App Bundle, and keeps the results as workflow artifacts.
+The [Android build workflow](.github/workflows/android.yml) runs lint, JVM tests, and the emulator startup test. It builds the APK and unsigned App Bundle and keeps reports as workflow artifacts.

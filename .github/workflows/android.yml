@@ -5,6 +5,11 @@ on:
     branches: [main, master]
   pull_request:
   workflow_dispatch:
+    inputs:
+      use_hostinger:
+        description: Run the build on the Hostinger VPS
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -16,8 +21,14 @@ concurrency:
 jobs:
   build:
     name: Lint, test and build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    runs-on: >-
+      ${{ ((github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SCANCODE_HOSTINGER_ENABLED == 'true') ||
+          (github.event_name == 'workflow_dispatch' && inputs.use_hostinger && github.ref_type == 'branch' && github.actor == 'josearias210'))
+          && 'scancode-hostinger' || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    outputs:
+      used_hostinger: ${{ runner.environment == 'self-hosted' }}
+      evidence_id: ${{ steps.upload-evidence.outputs.artifact-id }}
 
     steps:
       - name: Check out sources
@@ -40,13 +51,40 @@ jobs:
           packages: 'platforms;android-37.0 build-tools;37.0.0'
 
       - name: Lint, test and build
-        run: bash ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
+        shell: bash
+        run: |
+          build_options=(--no-daemon)
+          if [[ "$RUNNER_ENVIRONMENT" == self-hosted ]]; then
+            build_options+=(--max-workers=1)
+          fi
+          bash ./gradlew "${build_options[@]}" :app:lintDebug :app:testDebugUnitTest :app:assembleDebug :app:bundleRelease
 
       - name: Check 16 KiB native alignment
         run: |
           bash scripts/check-native-alignment.sh \
             app/build/outputs/apk/debug/app-debug.apk \
             app/build/outputs/bundle/release/app-release.aab
+
+      - name: Enable Android emulator acceleration
+        if: runner.environment == 'github-hosted'
+        run: sudo chmod a+rw /dev/kvm
+
+      - name: Test app launch on an Android emulator
+        if: runner.environment == 'github-hosted'
+        run: bash scripts/run-android-emulator-tests.sh "$RUNNER_TEMP/scancode-emulator.log"
+
+      - name: Keep Android instrumented test evidence
+        id: upload-evidence
+        if: ${{ !cancelled() && runner.environment == 'github-hosted' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: scancode-instrumented-test-reports-${{ github.run_attempt }}
+          path: |
+            app/build/outputs/androidTest-results/connected/debug/
+            app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/
+            app/build/reports/androidTests/connected/debug/
+            ${{ runner.temp }}/scancode-emulator.log
+          retention-days: 7
 
       - name: Keep build artifacts
         if: github.ref_name == github.event.repository.default_branch && github.ref_type == 'branch'
@@ -68,3 +106,154 @@ jobs:
             app/build/reports/lint-results-debug.*
             app/build/reports/tests/testDebugUnitTest/
           retention-days: 7
+
+  emulator:
+    name: Test Android on an emulator
+    needs: build
+    if: needs.build.outputs.used_hostinger == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    outputs:
+      evidence_id: ${{ steps.upload-evidence.outputs.artifact-id }}
+    steps:
+      - name: Check out sources
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up JDK 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          packages: 'platforms;android-37.0 build-tools;37.0.0'
+      - name: Enable Android emulator acceleration
+        run: sudo chmod a+rw /dev/kvm
+      - name: Test app launch on an Android emulator
+        run: bash scripts/run-android-emulator-tests.sh "$RUNNER_TEMP/scancode-emulator.log"
+      - name: Keep Android instrumented test evidence
+        id: upload-evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: scancode-instrumented-test-reports-${{ github.run_attempt }}
+          path: |
+            app/build/outputs/androidTest-results/connected/debug/
+            app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected/
+            app/build/reports/androidTests/connected/debug/
+            ${{ runner.temp }}/scancode-emulator.log
+          retention-days: 7
+
+  show-review-evidence:
+    name: Show screenshot in the pull request
+    needs: [build, emulator]
+    if: >-
+      !cancelled() && (needs.build.outputs.evidence_id || needs.emulator.outputs.evidence_id) &&
+      github.actor != 'dependabot[bot]' &&
+      ((github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.user.login != 'dependabot[bot]') ||
+       (github.event_name == 'workflow_dispatch' && github.ref_type == 'branch'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    concurrency:
+      group: android-review-evidence
+      queue: max
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Publish the screenshot and update the evidence comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          EVIDENCE_ID: ${{ needs.emulator.outputs.evidence_id || needs.build.outputs.evidence_id }}
+          TEST_JOB_RESULT: ${{ needs.emulator.outputs.evidence_id && needs.emulator.result || needs.build.result }}
+        shell: bash
+        run: |
+          repo_api="repos/$GITHUB_REPOSITORY"
+          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
+            PR_HEAD="$GITHUB_SHA"
+            number_list=$(gh api --method GET "$repo_api/pulls" --paginate \
+              -f state=open -f "head=$GITHUB_REPOSITORY_OWNER:$GITHUB_REF_NAME" |
+              jq -r --arg repo "$GITHUB_REPOSITORY" --arg sha "$PR_HEAD" \
+                '.[] | select(.head.repo.full_name == $repo and .head.sha == $sha and .user.login != "dependabot[bot]") | .number')
+            if [[ -z "$number_list" ]]; then
+              echo "This branch has no open pull request for the tested commit."
+              exit 0
+            fi
+          else
+            number_list="$PR_NUMBER"
+          fi
+
+          evidence_dir="$RUNNER_TEMP/review-evidence"
+          mkdir -p "$evidence_dir"
+          gh api "$repo_api/actions/artifacts/$EVIDENCE_ID/zip" > "$evidence_dir/reports.zip"
+          unzip -q "$evidence_dir/reports.zip" -d "$evidence_dir"
+          screenshot=$(find "$evidence_dir" -type f -name home-screen.png -print -quit)
+          if [[ -n "$screenshot" ]]; then
+            test "$(file --brief --mime-type "$screenshot")" = image/png
+            base64 -w0 "$screenshot" > "$evidence_dir/image.b64"
+          fi
+
+          while IFS= read -r PR_NUMBER; do
+            open_head=$(gh api "$repo_api/pulls/$PR_NUMBER" --jq 'select(.state == "open") | .head.sha')
+            if [[ "$open_head" != "$PR_HEAD" ]]; then
+              echo "PR #$PR_NUMBER is closed or has a newer commit."
+              continue
+            fi
+            image_markdown="Android did not produce a screenshot in this attempt."
+            if [[ -n "$screenshot" ]]; then
+              # Keep review images out of the application's Git history.
+              branch=ci-evidence
+              image_path="pr-$PR_NUMBER/home-screen.png"
+              message="Android home screen for PR #$PR_NUMBER"
+              encoded="$evidence_dir/image.b64"
+              if gh api "$repo_api/git/ref/heads/$branch" --silent 2>/dev/null; then
+                image_api="$repo_api/contents/$image_path"
+                previous=$(gh api "$image_api?ref=$branch" --jq .sha 2>/dev/null || true)
+                update=()
+                if [[ -n "$previous" ]]; then
+                  update=(-f "sha=$previous")
+                fi
+                image_commit=$(gh api --method PUT "$image_api" -f branch="$branch" -f message="$message" \
+                  -F "content=@$encoded" "${update[@]}" --jq .commit.sha)
+              else
+                blob=$(gh api "$repo_api/git/blobs" -f encoding=base64 -F "content=@$encoded" --jq .sha)
+                tree=$(jq -n --arg path "$image_path" --arg sha "$blob" \
+                  '{tree:[{path:$path, mode:"100644", type:"blob", sha:$sha}]}' |
+                  gh api --method POST "$repo_api/git/trees" --input - --jq .sha)
+                image_commit=$(gh api "$repo_api/git/commits" -f message="$message" -f tree="$tree" --jq .sha)
+                gh api "$repo_api/git/refs" -f ref="refs/heads/$branch" -f sha="$image_commit" --silent
+              fi
+              image_markdown="![ScanCode home screen on Android 16](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$image_commit/$image_path)"
+            fi
+
+            marker='<!-- scancode-android-review-evidence -->'
+            body="$evidence_dir/comment.md"
+            run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            cat > "$body" <<EOF
+          $marker
+          ### Android smoke test evidence
+
+          Android test job: **$TEST_JOB_RESULT**.
+
+          [Tested PR commit ${PR_HEAD:0:7}]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$PR_HEAD) · [Workflow run, attempt $GITHUB_RUN_ATTEMPT]($run_url/attempts/$GITHUB_RUN_ATTEMPT) · [Test reports]($run_url/artifacts/$EVIDENCE_ID)
+
+          $image_markdown
+          EOF
+            comments_api="$repo_api/issues/$PR_NUMBER/comments"
+            comment=$(gh api "$comments_api" --paginate --jq \
+              '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- scancode-android-review-evidence -->"))) | .id' | tail -n 1)
+            if [[ -n "$comment" ]]; then
+              gh api --method PATCH "$repo_api/issues/comments/$comment" -F "body=@$body" --jq .html_url
+            else
+              gh api --method POST "$comments_api" -F "body=@$body" --jq .html_url
+            fi
+          done <<< "$number_list"
