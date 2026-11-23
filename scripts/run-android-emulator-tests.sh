@@ -65,11 +65,16 @@ adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
 
 if [[ -n "$distribution_apk" ]]; then
-  adb install "$distribution_apk"
+  adb install --no-incremental "$distribution_apk"
+  launch_status=0
   launch=$(adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER \
-    -p com.scancode.app | tr -d '\r')
+    -n com.scancode.app/.MainActivity 2>&1 | tr -d '\r') || launch_status=$?
   printf '%s\n' "$launch"
-  grep -Fxq 'Status: ok' <<< "$launch"
+  if (( launch_status != 0 )) || ! grep -Fxq 'Status: ok' <<< "$launch"; then
+    echo "Android could not launch the signed distribution APK." >&2
+    adb logcat -b crash -d >&2
+    exit 1
+  fi
   if ! timeout 45 bash -c '
     until adb shell uiautomator dump /data/local/tmp/scancode-home.xml >/dev/null &&
         screen=$(adb shell cat /data/local/tmp/scancode-home.xml) &&
