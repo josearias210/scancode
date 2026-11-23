@@ -10,7 +10,7 @@ import zlib
 MAX_BYTES = 2 * 1024 * 1024
 ROOT_FILES = {
     ".dockerignore", ".gitattributes", ".gitignore",
-    "CHANGELOG.md", "CONTRIBUTING.md", "Dockerfile", "PRIVACY.md",
+    "AGENTS.md", "CHANGELOG.md", "CONTRIBUTING.md", "Dockerfile", "PRIVACY.md",
     "README.md", "SECURITY.md", "build.gradle.kts", "build.ps1",
     "gradle.properties", "gradlew", "gradlew.bat", "settings.gradle.kts",
 }

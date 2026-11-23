@@ -4,6 +4,7 @@ set -euo pipefail
 emulator_log="${1:?Provide the emulator log path}"
 acceleration="${2:-on}"
 api_level="${3:-36}"
+distribution_apk="${4:-}"
 system_image="system-images;android-$api_level;aosp_atd;x86_64"
 test_results=app/build/outputs/androidTest-results/connected/debug
 test_artifacts=app/build/outputs/connected_android_test_additional_output/debugAndroidTest/connected
@@ -62,6 +63,33 @@ adb shell input keyevent 82
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
+
+if [[ -n "$distribution_apk" ]]; then
+  adb install --no-incremental "$distribution_apk"
+  launch_status=0
+  launch=$(adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER \
+    -n com.scancode.app/.MainActivity 2>&1 | tr -d '\r') || launch_status=$?
+  printf '%s\n' "$launch"
+  if (( launch_status != 0 )) || ! grep -Fxq 'Status: ok' <<< "$launch"; then
+    echo "Android could not launch the signed distribution APK." >&2
+    adb logcat -b crash -d >&2
+    exit 1
+  fi
+  if ! timeout 45 bash -c '
+    until adb shell uiautomator dump /data/local/tmp/scancode-home.xml >/dev/null &&
+        screen=$(adb shell cat /data/local/tmp/scancode-home.xml) &&
+        [[ "$screen" == *"resource-id=\"com.scancode.app:id/scanTitle\""* &&
+           "$screen" == *"resource-id=\"com.scancode.app:id/historyButton\""* ]]; do
+      sleep 1
+    done
+  '; then
+    echo "The signed APK did not show the ScanCode home screen." >&2
+    adb logcat -b crash -d >&2
+    exit 1
+  fi
+  echo "The signed distribution APK installed and showed the ScanCode home screen."
+  exit 0
+fi
 
 test_started="$ANDROID_AVD_HOME/test-started"
 touch "$test_started"

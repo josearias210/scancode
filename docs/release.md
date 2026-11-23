@@ -4,9 +4,13 @@ ScanCode 1.1.0 uses the existing application ID `com.scancode.app` and increment
 
 ## Build artifacts
 
-The [Android workflow](../.github/workflows/android.yml) runs on pull requests, pushes to `main` or `master`, and manual dispatch. It runs Android Lint, JVM tests, and an emulator startup test. It builds an installable debug APK and an unsigned release App Bundle and verifies 16 KiB APK alignment and 64-bit native library alignment in the bundle. Emulator test reports and default-branch build artifacts are retained for seven days. The workflow uses a GitHub-hosted runner and read-only repository access.
+The [Android workflow](../.github/workflows/android.yml) runs Android Lint, JVM tests, an emulator startup test, and 16 KiB native alignment checks. Pull request runs upload the tested debug build as `scancode-preview.apk`. Successful builds on `main` build a release APK, sign it with the distribution key, verify its certificate and alignment, and install and launch that same APK on an Android emulator. The workflow then uploads `scancode.apk`. Downloads are available from the run summary or **Artifacts** for seven days to signed-in GitHub users.
 
-To rebuild locally, use `./build.ps1` on Windows with Docker or run the Gradle command in the [README](../README.md). The Docker script keeps its debug signing key in a local Docker volume so later local debug builds can update the app in place. Keep that volume while testing upgrades. Debug APKs built in other environments can have a different signing key. Inspect the native libraries and package alignment when updating CameraX, ML Kit, or the Android Gradle Plugin. [Android 16 KB page size checks](https://developer.android.com/guide/practices/page-sizes)
+Keep the encrypted distribution keystore and its password in a private backup outside the repository checkout. A Windows DPAPI password backup is tied to the original Windows user and machine. Restore the same key if the signing secrets ever need to be recreated, and check its public certificate fingerprint against `APK_SIGNING_CERT_SHA256` before restoring them.
+
+The `android-distribution` GitHub Actions environment stores the keystore in `APK_SIGNING_KEYSTORE_BASE64` and the password in `APK_SIGNING_PASSWORD`. Its branch policy allows `main`. The signing step reads the key from a temporary file and verifies the resulting APK against the expected public fingerprint before publishing.
+
+Gradle's debug keystore signs previews and local test builds. On Windows, `build.ps1` keeps it at `/root/.android/debug.keystore` in the `scancode-android-home` Docker volume. Android accepts in-place updates signed with a matching certificate. If the installed copy has a different signer, uninstalling it before a fresh installation removes its local app data. [Android app signing](https://developer.android.com/studio/publish/app-signing)
 
 ## 1.1.0 verification
 
