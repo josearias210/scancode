@@ -12,6 +12,7 @@ keystore.properties
 .env
 
 # Local credentials, signing material, and generated packages
+/.signing/
 .env.*
 *.pem
 *.key
